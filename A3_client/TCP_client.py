@@ -1,9 +1,12 @@
-9#################################################################################
+#!/usr/bin/python3
+
+#################################################################################
 # A Chat Client application. Used in the course IELEx2001 Computer networks, NTNU
 #################################################################################
 
-from socket import *
-from assets.TextColors import TextColors
+import socket
+from assets.config import *
+from assets.DebugTools import *
 
 # The states that the application can be in
 states = [
@@ -11,10 +14,6 @@ states = [
     "connected",                    # Connected to a chat server, but not authorized (not logged in)
     "authorized"                    # Connected and authorized (logged in)
 ]
-
-TCP_PORT = 1300                     # TCP port used for communication
-SERVER_HOST = "datakomm.work"       # Set this to either hostname (domain) or IP address of the chat server
-
 
 # State variables
 current_state = "disconnected"      # The current state of the system
@@ -47,7 +46,8 @@ def send_command(command, arguments=None):
         else:
             cmd = f"{command} {arguments}\n"
         client_socket.send(cmd.encode())
-        print(TextColors.OKBLUE + "\t\t\t\t  Command sent\n" + TextColors.ENDC)
+
+        # print(TextColors.OKBLUE + "\t\t\t\t  Command sent\n" + TextColors.ENDC)
 
     except OSError as e:
         print(TextColors.FAIL + "Error: " + e + TextColors.ENDC)
@@ -83,7 +83,7 @@ def get_servers_response():
         response = read_one_line(client_socket)
         return response
     except OSError as e:
-        print(TextColors.FAIL + "Connection error: " + e + TextColors.ENDC)
+        FAIL_PRINT("Connection error: " + e)
 
 
 def connect_to_server():
@@ -91,16 +91,20 @@ def connect_to_server():
     global client_socket
     global current_state
 
-    client_socket = socket(AF_INET, SOCK_STREAM)
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
         client_socket.connect((SERVER_HOST, TCP_PORT))
         current_state = "connected"
         send_command("sync")                            #Sends the sync-command to the server
         if get_servers_response() == "modeok":          #Checks if sync mode was successfully enabled
-            print(TextColors.OKBLUE + "sync mode enabled." + TextColors.ENDC)
+            if DEBUG:
+                DEBUG_PRINT("sync mode enabled.")
+            OKGREEN_PRINT(f"Successfully connected to server at {SERVER_HOST}:{TCP_PORT}.")
         else:
-            print("sync mode failed")
+            if DEBUG:
+                DEBUG_PRINT("sync mode failed")
+            FAIL_PRINT(f"Could not connect to server at {SERVER_HOST}:{TCP_PORT} in sync mode.")
 
     except OSError as e:
         print(TextColors.FAIL + "Connection error: " + e + TextColors.ENDC)
@@ -113,10 +117,10 @@ def disconnect_from_server():
     try:
         client_socket.close()
         current_state = "disconnected"
-        print(TextColors.OKGREEN + "Successfully disconnected from server." + TextColors.ENDC)
+        OKGREEN_PRINT("Successfully disconnected from server.")
 
     except OSError as e:
-        print(TextColors.FAIL + "Error: " + e + TextColors.ENDC)
+        FAIL_PRINT("Error: " + e)
         pass
 
 
@@ -124,58 +128,117 @@ def authorize():
     global current_state
     
     if current_state == "authorized":
-        print(TextColors.WARNING + "User already logged in." + TextColors.ENDC)
+        WARNING_PRINT("User already logged in.")
 
     else:
         username = input(TextColors.BOLD + "Enter username: " + TextColors.ENDC)
         send_command("login", username)
         response = get_servers_response()
+        
+        if DEBUG:
+            DEBUG_PRINT(response)
+
         if response == "loginok":
             current_state = "authorized"
-            print(TextColors.OKGREEN + "Login successfull!" + TextColors.ENDC)
+            OKGREEN_PRINT("Login successfull!")
         else:
-            print(response)
+            FAIL_PRINT(response)
 
 
 def send_public_message():
     global client_socket
     msg_to_send = input(TextColors.BOLD + "Skriv inn en melding: " + TextColors.ENDC)
     send_command("msg", msg_to_send)
+
     response = get_servers_response()
-    print("Server response: " + TextColors.OKGREEN + response + TextColors.ENDC)
+    parsed_response = response.split(' ', 1)
+    
+    if DEBUG:
+        DEBUG_PRINT(response)
+    if parsed_response[0] == "msgok":
+        OKGREEN_PRINT(f"Message sent successfully to {parsed_response[1]} users.")
+    elif parsed_response[0] == "msgerr":
+        FAIL_PRINT("Message wasn't sent: " + parsed_response[1])
+    else:
+        WARNING_PRINT("Something Happened ¯\\_(ツ)_/¯")
 
 
 def send_private_message():
     global client_socket
-    recv = input("Hvem vil du sende til: ")
-    msg_to_send = input("Skriv inn en melding: ")
+    recv = input(TextColors.BOLD + "Hvem vil du sende til: " + TextColors.ENDC)
+    msg_to_send = input(TextColors.BOLD + "Skriv inn en melding: " + TextColors.ENDC)
     send_command("privmsg", f"{recv} {msg_to_send}")
+
     response = get_servers_response()
-    print("Server response: " + TextColors.OKGREEN + response + TextColors.ENDC)
+    parsed_response = response.split(' ', 1)
+
+    if DEBUG:
+        DEBUG_PRINT(response)
+
+    if parsed_response[0] == "msgok":
+        OKGREEN_PRINT(f"Message sent successfully to {recv}.")
+    elif parsed_response[0] == "msgerr":
+        FAIL_PRINT("Message wasn't sent: " + parsed_response[1])
+    else:
+        WARNING_PRINT("Something Happened ¯\\_(ツ)_/¯")
 
 
 def see_list_of_users():
     global client_socket
     send_command("users")
+
     response = get_servers_response()
-    users = response.split(' ')
-    print("Server response:")
+    users = response.split(' ')[1:]
+
+    if DEBUG:
+        DEBUG_PRINT(response)
+
+    UNDERLINE_PRINT(f"There are currently {len(users)} users online:")
+    users.sort()
     for user in users:
-        print(TextColors.OKGREEN + user + TextColors.ENDC)
+        BOLD_PRINT(user)
 
 
 def read_messages_in_the_inbox():
     global client_socket
     send_command("inbox")
+
     response = get_servers_response()
-
     num_lines = int(response.split(' ')[1])
-    print(TextColors.OKGREEN + "Server response :" + TextColors.OKGREEN + response)
 
-    for i in range(num_lines):
-        print(get_servers_response())
+    if DEBUG:
+        DEBUG_PRINT(response)
 
+    if num_lines == 0:
+        OKBLUE_PRINT("You don't have any messages.")
+    else:
+        UNDERLINE_PRINT(f"You've got {num_lines} unread messages: \n")
+        for i in range(num_lines):
+            recv_msg = get_servers_response().split(' ', 2)
+            msg_line = ""
+            
+            if recv_msg[0] == "privmsg":
+                msg_line += "(Private) ".rjust(10)
+            else:
+                msg_line += "(Global) ".rjust(10)
+            
+            msg_line += f"{recv_msg[1]}: ".rjust(15)
+            msg_line += recv_msg[2]
 
+            BOLD_PRINT(msg_line)
+
+def get_joke():
+    global client_socket
+    send_command("joke")
+
+    response = get_servers_response()
+    joke = response.split(' ', 1)[1]
+
+    if DEBUG:
+        DEBUG_PRINT(response)
+    
+    BOLD_PRINT("Server, tell me a joke! Server: ")
+    OKBLUE_PRINT(joke)
 
 """
 The list of available actions that the user can perform
@@ -204,46 +267,27 @@ available_actions = [
     {
         "description": "Send a public message",
         "valid_states": ["connected", "authorized"],
-        # TODO Step 6 - implement sending a public message
-        # Hint: ask the user to input the message from the keyboard
-        # Hint: you can reuse the send_command() function to send the "msg" command
-        # Hint: remember to read the server's response: whether the message was successfully sent or not
         "function": send_public_message
     },
     {
         "description": "Send a private message",
         "valid_states": ["connected","authorized"],
-        # TODO Step 8 - implement sending a private message
-        # Hint: ask the user to input the recipient and message from the keyboard
-        # Hint: you can reuse the send_command() function to send the "privmsg" command
-        # Hint: remember to read the server's response: whether the message was successfully sent or not
         "function": send_private_message
     },
     {
         "description": "Read messages in the inbox",
         "valid_states": ["connected", "authorized"],
-        # TODO Step 9 - implement reading messages from the inbox.
-        # Hint: send the inbox command, find out how many messages there are. Then parse messages
-        # one by one: find if it is a private or public message, who is the sender. Print this
-        # information in a user friendly way
         "function": read_messages_in_the_inbox
     },
     {
         "description": "See list of users",
         "valid_states": ["connected", "authorized"],
-        # TODO Step 7 - Implement getting the list of currently connected users
-        # Hint: use the provided chat client tools and analyze traffic with Wireshark to find out how
-        # the user list is reported. Then implement a function which gets the user list from the server
-        # and prints the list of usernames
         "function": see_list_of_users
     },
     {
         "description": "Get a joke",
         "valid_states": ["connected", "authorized"],
-        # TODO - optional step - implement the joke fetching from the server.
-        # Hint: this part is not described in the protocol. But the command is simple. Try to find
-        # out how it works ;)
-        "function": None
+        "function": get_joke
     },
     {
         "description": "Quit the application",
@@ -256,11 +300,13 @@ available_actions = [
 def run_chat_client():
     """ Run the chat client application loop. When this function exists, the application will stop """
 
+    if DEBUG:
+        DEBUG_PRINT("!!! CHAT CLIENT IS IN DEBUG MODE !!!")
     while must_run:
         print_menu()
         action = select_user_action()
         perform_user_action(action)
-    print("Thanks for watching. Like and subscribe! 👍")
+    print("Good Bye!")
 
 
 def print_menu():
@@ -316,11 +362,11 @@ def perform_user_action(action_index):
             if function_to_run is not None:
                 function_to_run()
             else:
-                print("Internal error: NOT IMPLEMENTED (no function assigned for the action)!")
+                FAIL_PRINT("Internal error: NOT IMPLEMENTED (no function assigned for the action)!")
         else:
-            print("This function is not allowed in the current system state (%s)" % current_state)
+            FAIL_PRINT("This function is not allowed in the current system state (%s)" % current_state)
     else:
-        print("Invalid input, please choose a valid action")
+        WARNING_PRINT("Invalid input, please choose a valid action")
     print()
     return None
 

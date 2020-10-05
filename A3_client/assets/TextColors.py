@@ -7,3 +7,5 @@ class TextColors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
+    DEBUG = '\x1b[0;30;47m'
+    ENDDEBUG = '\x1b[0m'
