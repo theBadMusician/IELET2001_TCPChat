@@ -3,7 +3,7 @@ from random import randint
 from time import sleep
 
 # from socket_liberary import read_one_line
-#sggggsdfasdfgadsgadgsasdg
+#kwjdhkwjh
 def start_client():
     client_socket = socket(AF_INET, SOCK_STREAM)
     client_socket.connect(("datakomm.work", 1301))
