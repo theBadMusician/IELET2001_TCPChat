@@ -3,29 +3,25 @@
 #################################################################################
 
 from socket import *
+from assets.TextColors import TextColors
 
-
-# --------------------
-# Constants
-# --------------------
 # The states that the application can be in
 states = [
-    "disconnected",  # Connection to a chat server is not established
-    "connected",  # Connected to a chat server, but not authorized (not logged in)
-    "authorized"  # Connected and authorized (logged in)
+    "disconnected",                 # Connection to a chat server is not established
+    "connected",                    # Connected to a chat server, but not authorized (not logged in)
+    "authorized"                    # Connected and authorized (logged in)
 ]
-TCP_PORT = 1300  # TCP port used for communication
-SERVER_HOST = "datakomm.work"  # Set this to either hostname (domain) or IP address of the chat server
 
-# --------------------
+TCP_PORT = 1300                     # TCP port used for communication
+SERVER_HOST = "datakomm.work"       # Set this to either hostname (domain) or IP address of the chat server
+
+
 # State variables
-# --------------------
-current_state = "disconnected"  # The current state of the system
-# When this variable will be set to false, the application will stop
-must_run = True
-# Use this variable to create socket connection to the chat server
-# Note: the "type: socket" is a hint to PyCharm about the type of values we will assign to the variable
-client_socket = None  # type: socket
+current_state = "disconnected"      # The current state of the system
+
+must_run = True                     # When this variable will be set to false, the application will stop
+
+client_socket = None                # type: socket: Use this variable to create socket connection to the chat server
 
 
 def quit_application():
@@ -100,8 +96,8 @@ def connect_to_server():
     try:
         client_socket.connect((SERVER_HOST, TCP_PORT))
         current_state = "connected"
-        send_command("sync") #Sends the sync-command to the server
-        if get_servers_response() == "modeok": #Checks if sync mode was successfully enabled
+        send_command("sync")                            #Sends the sync-command to the server
+        if get_servers_response() == "modeok":          #Checks if sync mode was successfully enabled
             print("sync mode enabled")
         else:
             print("sync mode failed")
@@ -262,6 +258,7 @@ def run_chat_client():
 
 def print_menu():
     """ Print the menu showing the available options """
+
     print("==============================================")
     print("What do you want to do now? ")
     print("==============================================")
