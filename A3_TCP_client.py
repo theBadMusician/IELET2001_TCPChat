@@ -47,10 +47,10 @@ def send_command(command, arguments=None):
         else:
             cmd = f"{command} {arguments}\n"
         client_socket.send(cmd.encode())
-        print("command sent")
+        print(TextColors.OKBLUE + "\t\t\t\t  Command sent\n" + TextColors.ENDC)
 
     except OSError as e:
-        print("Error: ", e)
+        print(TextColors.FAIL + "Error: " + e + TextColors.ENDC)
 
 
 def read_one_line(sock):
@@ -83,7 +83,7 @@ def get_servers_response():
         response = read_one_line(client_socket)
         return response
     except OSError as e:
-        print("Connection error: ", e)
+        print(TextColors.FAIL + "Connection error: " + e + TextColors.ENDC)
 
 
 def connect_to_server():
@@ -98,12 +98,12 @@ def connect_to_server():
         current_state = "connected"
         send_command("sync")                            #Sends the sync-command to the server
         if get_servers_response() == "modeok":          #Checks if sync mode was successfully enabled
-            print("sync mode enabled")
+            print(TextColors.OKBLUE + "sync mode enabled." + TextColors.ENDC)
         else:
             print("sync mode failed")
 
     except OSError as e:
-        print("Connection error: ", e)
+        print(TextColors.FAIL + "Connection error: " + e + TextColors.ENDC)
 
 
 def disconnect_from_server():
@@ -113,10 +113,10 @@ def disconnect_from_server():
     try:
         client_socket.close()
         current_state = "disconnected"
-        print("disconnected from server")
+        print(TextColors.OKGREEN + "Successfully disconnected from server." + TextColors.ENDC)
 
     except OSError as e:
-        print("Error: ", e)
+        print(TextColors.FAIL + "Error: " + e + TextColors.ENDC)
         pass
 
 
@@ -124,38 +124,45 @@ def authorize():
     global current_state
     
     if current_state == "authorized":
-        print("user already logged in")
+        print(TextColors.WARNING + "User already logged in." + TextColors.ENDC)
 
     else:
-        username = input("enter username: ")
+        username = input(TextColors.BOLD + "Enter username: " + TextColors.ENDC)
         send_command("login", username)
         response = get_servers_response()
         if response == "loginok":
             current_state = "authorized"
-            print("Login successfull!")
+            print(TextColors.OKGREEN + "Login successfull!" + TextColors.ENDC)
         else:
             print(response)
 
+
 def send_public_message():
     global client_socket
-    msg_to_send = input("Skriv inn en melding:")
+    msg_to_send = input(TextColors.BOLD + "Skriv inn en melding: " + TextColors.ENDC)
     send_command("msg", msg_to_send)
     response = get_servers_response()
-    print("Server response:", response)
+    print("Server response: " + TextColors.OKGREEN + response + TextColors.ENDC)
+
 
 def send_private_message():
     global client_socket
-    recv = input("Hvem vil du sende til:")
-    msg_to_send = input("Skriv inn en melding:")
+    recv = input("Hvem vil du sende til: ")
+    msg_to_send = input("Skriv inn en melding: ")
     send_command("privmsg", f"{recv} {msg_to_send}")
     response = get_servers_response()
-    print("Server response:", response)
+    print("Server response: " + TextColors.OKGREEN + response + TextColors.ENDC)
+
 
 def see_list_of_users():
     global client_socket
     send_command("users")
     response = get_servers_response()
-    print("Server response:", response)
+    users = response.split(' ')
+    print("Server response:")
+    for user in users:
+        print(TextColors.OKGREEN + user + TextColors.ENDC)
+
 
 def read_messages_in_the_inbox():
     global client_socket
@@ -163,9 +170,9 @@ def read_messages_in_the_inbox():
     response = get_servers_response()
 
     num_lines = int(response.split(' ')[1])
-    print(f"Server response: {num_lines}")
+    print(TextColors.OKGREEN + "Server response :" + TextColors.OKGREEN + response)
 
-    for line in range(num_lines):
+    for i in range(num_lines):
         print(get_servers_response())
 
 
@@ -278,8 +285,9 @@ def select_user_action():
     :return: The action as an index in available_actions array or None if the input was invalid
     """
     number_of_actions = len(available_actions)
-    hint = "Enter the number of your choice (1..%i):" % number_of_actions
+    hint = f"{TextColors.BOLD}Enter the number of your choice (1-{number_of_actions}): {TextColors.ENDC}"
     choice = input(hint)
+    print("==============================================")
     # Try to convert the input to an integer
     try:
         choice_int = int(choice)
