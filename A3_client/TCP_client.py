@@ -20,7 +20,7 @@ current_state = "disconnected"      # The current state of the system
 
 must_run = True                     # When this variable will be set to false, the application will stop
 
-client_socket = None                # type: socket: Use this variable to create socket connection to the chat server
+client_socket = None                # (type socket) Use this variable to create socket connection to the chat server
 
 
 def quit_application():
