@@ -70,10 +70,12 @@ def handle_privmsg_req(client_id, msg_req_parsed):
     recipient = recipient_msg[0]
     msg = recipient_msg[1]
 
-    if not any(recipient in name['client_name'] for name in client_dict.values()) or (any(recipient in name['client_name'] for name in client_dict.values()) and "Anon-" in recipient):
+    if client_dict[client_id]['client_name'] == "Anon-" + str(client_id):
+        return "msgerr unauthorized\n"
+    elif not any(recipient in name['client_name'] for name in client_dict.values()) or (any(recipient in name['client_name'] for name in client_dict.values()) and "Anon-" in recipient):
         return "msgerr incorrect recipient\n"
     try:
-        return f"msgok 1\n", f"msg {client_dict[client_id]['client_name']} {msg}\n"
+        return f"msgok 1\n", f"privmsg {client_dict[client_id]['client_name']} {msg}\n"
     except Exception:
         return "msgerror Something happened ¯\\_(ツ)_/¯\n"
 
