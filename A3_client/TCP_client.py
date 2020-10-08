@@ -127,22 +127,21 @@ def disconnect_from_server():
 def authorize():
     global current_state
     
-    if current_state == "authorized":
-        WARNING_PRINT("User already logged in.")
+    #if current_state == "authorized":
+    #   WARNING_PRINT("User already logged in.")
 
+    username = input(TextColors.BOLD + "Enter username: " + TextColors.ENDC)
+    send_command("login", username)
+    response = get_servers_response()
+
+    if DEBUG:
+        DEBUG_PRINT(response)
+
+    if response == "loginok":
+        current_state = "authorized"
+        OKGREEN_PRINT("Login successfull!")
     else:
-        username = input(TextColors.BOLD + "Enter username: " + TextColors.ENDC)
-        send_command("login", username)
-        response = get_servers_response()
-        
-        if DEBUG:
-            DEBUG_PRINT(response)
-
-        if response == "loginok":
-            current_state = "authorized"
-            OKGREEN_PRINT("Login successfull!")
-        else:
-            FAIL_PRINT(response)
+        FAIL_PRINT(response)
 
 
 def send_public_message():

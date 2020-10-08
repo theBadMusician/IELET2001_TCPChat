@@ -1,20 +1,28 @@
+from assets.config import *
 import socket
 import threading
 import random
 import string
 
 SERVER_PORT = 80
-client_dict = {}
 
+client_dict = {}
 joke_list = []
+
 with open("assets/jokes.txt", "r") as jokes:
     for line in jokes:
         joke_list.append(line)
 
-print(joke_list)
+def deep_get(_dict, keys, default=None):
+    for key in keys:
+        if isinstance(_dict, dict):
+            _dict = _dict.get(key, default)
+        else:
+            return default
+    return _dict
 
 def create_UID():
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
 def read_one_line(sock):
     """
@@ -34,6 +42,22 @@ def read_one_line(sock):
             message += character
     return message
 
+def handle_login_req(client_id, login_req):
+    login_parsed = login_req.split(' ', 1)
+    username = login_parsed[1]
+
+    # Error handling
+    if ' ' in username:
+        return "loginerr incorrect username format\n"
+    elif any(username in name.values() for name in client_dict.values()):
+        return "loginerr username already in use\n"
+    else:
+        client_dict[client_id]['client_name'] = username
+        if DEBUG:
+            print("Client dict: " + str(client_dict[client_id]))
+        return "loginok\n"
+
+
 def handle_next_client(connection_socket, client_id):
     command = 'x'
     while command != "":
@@ -43,6 +67,8 @@ def handle_next_client(connection_socket, client_id):
             response = "PONG\n"
         elif command == "sync":
             response = "modeok\n"
+        elif command.split(' ', 1)[0] == "login":
+            response = handle_login_req(client_id, command)
         elif command == "joke":
             response = "joke " + joke_list[random.randint(0, len(joke_list) - 1)]
         else:
@@ -66,12 +92,13 @@ def start_server():
         connection_socket, client_address = welcome_socket.accept()
 
         client_id = create_UID()
-        while client_id in client_dict:
+        while client_id in client_dict.keys():
             client_id = create_UID()
         client_dict[client_id] = {}
-        client_dict[client_id]['client_name'] = "Anonymous" + client_dict[client_id]
-        print(client_dict)
+        client_dict[client_id]['client_name'] = "Anon-" + client_id
 
+        if DEBUG:
+            print("Whole client dict: " + str(client_dict))
         print(f"Client ID '{client_id}' connected.")
         client_thread = threading.Thread(target=handle_next_client,
                                          args=(connection_socket, client_id))
