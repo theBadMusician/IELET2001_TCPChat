@@ -1,7 +1,7 @@
 import argparse
 
 # Enable for DEBUG printouts
-DEBUG = 0
+DEBUG = 1
 
 
 #TCP_PORT = 1300                     # TCP port used for communication
