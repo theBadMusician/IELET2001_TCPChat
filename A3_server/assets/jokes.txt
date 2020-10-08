@@ -1,0 +1,10 @@
+I could tell you a joke about UDP but I don't know if you would get it.
+Why do programmers keep confusing Halloween and Christmas? Oct 31 == Dec 25
+A programmer walks into a bar, sits down next to a pretty girl and says --Im making a pull request.
+Q: How many programmers does it take to screw in a light bulb? A: None. It's a hardware problem.
+So I had some time to fix all 5 bugs in my code this week. Only 9 left.
+In order to understand recursion you must first understand recursion.
+A: Knock knock. B: Who's there? A: Broken state machine. B: Broken state machine, who? A: Knock knock.
+Q: Whats the object-oriented way to become wealthy? A: Inheritance
+There are only two kinds of programming languages: those people always bitch about and those nobody uses. (Bjarne Stroustrup)
+I would love to change the world, but they won’t give me the source code.

@@ -99,7 +99,7 @@ def connect_to_server():
         send_command("sync")                            #Sends the sync-command to the server
         if get_servers_response() == "modeok":          #Checks if sync mode was successfully enabled
             if DEBUG:
-                DEBUG_PRINT("sync mode enabled.")
+                DEBUG_PRINT("modeok")
             OKGREEN_PRINT(f"Successfully connected to server at {SERVER_HOST}:{TCP_PORT}.")
         else:
             if DEBUG:
