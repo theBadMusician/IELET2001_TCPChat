@@ -42,6 +42,9 @@ def read_one_line(sock):
             message += character
     return message
 
+def handle_sync_mode():
+    hey = 1
+
 def handle_login_req(client_id, login_req_parsed):
     username = login_req_parsed[1]
 
@@ -72,12 +75,15 @@ def handle_privmsg_req(client_id, msg_req_parsed):
 
     if client_dict[client_id]['client_name'] == "Anon-" + str(client_id):
         return "msgerr unauthorized\n"
-    elif not any(recipient in name['client_name'] for name in client_dict.values()) or (any(recipient in name['client_name'] for name in client_dict.values()) and "Anon-" in recipient):
+    elif not any(recipient in name['client_name'] for name in client_dict.values()):
         return "msgerr incorrect recipient\n"
-    try:
-        return f"msgok 1\n", f"privmsg {client_dict[client_id]['client_name']} {msg}\n"
-    except Exception:
-        return "msgerror Something happened ¯\\_(ツ)_/¯\n"
+    elif any(recipient in name['client_name'] for name in client_dict.values()) and "Anon-" in recipient:
+        return "msgerr incorrect recipient\n"
+    else:
+        try:
+            return f"msgok 1\n", f"privmsg {client_dict[client_id]['client_name']} {msg}\n"
+        except Exception:
+            return "msgerror Something happened ¯\\_(ツ)_/¯\n"
 
 
 def handle_next_client(connection_socket, client_id):
@@ -89,6 +95,8 @@ def handle_next_client(connection_socket, client_id):
         if command == "ping":
             response = "PONG\n"
         elif command == "sync":
+            client_dict[client_id]['sync_mode'] = True
+            client_dict[client_id]['inbox'] = []
             response = "modeok\n"
         elif command_parsed[0] == "login":
             response = handle_login_req(client_id, command_parsed)
@@ -100,6 +108,10 @@ def handle_next_client(connection_socket, client_id):
             response = handle_privmsg_req(client_id, command_parsed)
             recipient_id = [k for k, v in client_dict.items() if recipient in v['client_name']][0]
             client_dict[recipient_id]['socket'].send(response[1].encode())
+        elif command_parsed[0] == "users":
+            client_names_list = [v['client_name'] for k, v in client_dict.items()]
+            client_names = ' '.join([str(elem) for elem in client_names_list])
+            response = "users " + client_names + "\n"
         elif command == "joke":
             response = "joke " + joke_list[random.randint(0, len(joke_list) - 1)]
         else:
