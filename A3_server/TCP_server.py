@@ -1,3 +1,14 @@
+#!/usr/bin/python3
+
+#################################################################################
+# Gruppe 24: J. Dyrskog, E. Fagerbakke, M. Gaddour, V. Moland, B. Visockis      #
+# Øving A3 09.10.20 IELET2001 (Datakommunikasjon) NTNU, Trondheim               #
+#################################################################################
+
+# This server code was written to follow closely the specs layed out in the A3
+# Chat Protocol document and be compatible with the precompiled helping client
+# and our own standard CLI client.
+
 from assets.DebugTools import *
 import socket
 import threading

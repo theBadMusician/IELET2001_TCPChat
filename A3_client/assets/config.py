@@ -1,15 +1,10 @@
 import argparse
 
 # Enable for DEBUG printouts
-DEBUG = 1
+DEBUG = 0
 
-
-#TCP_PORT = 1300                     # TCP port used for communication
-#SERVER_HOST = "datakomm.work"       # Set this to either hostname (domain) or IP address of the chat server
-
-TCP_PORT = 80                     # TCP port used for communication
-SERVER_HOST = "192.168.0.225"       # Set this to either hostname (domain) or IP address of the chat server
-
+TCP_PORT = 1300                     # TCP port used for communication
+SERVER_HOST = "datakomm.work"       # Set this to either hostname (domain) or IP address of the chat server
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--debug",
