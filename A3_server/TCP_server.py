@@ -5,7 +5,7 @@
 # Øving A3 09.10.20 IELET2001 (Datakommunikasjon) NTNU, Trondheim               #
 #################################################################################
 
-# This server code was written to follow closely the specs layed out in the A3
+# This server code was written to follow the specs layed out in the A3
 # Chat Protocol document and be compatible with the precompiled helping client
 # and our own standard CLI client.
 
@@ -58,7 +58,7 @@ def read_one_line(sock):
     while not newline_received:
         try:
             character = sock.recv(1).decode()
-        except (ConnectionResetError, ConnectionAbortedError) as e:
+        except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError, OSError) as e:
             return -1
         if character == '\n':
             newline_received = True
@@ -84,7 +84,7 @@ def check_connections(client_id):
                 client_dict[dict_client_id]['socket'].send("\r".encode())
                 if DEBUG:
                     WARNING_PRINT("SENT CHECK TO " + dict_client_id)
-            except (ConnectionResetError, ConnectionAbortedError) as e:
+            except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError, OSError) as e:
                 # In case 'ping' returns a ConnectionError, close the socket.
                 client_dict[dict_client_id]['socket'].close()
     if DEBUG:
