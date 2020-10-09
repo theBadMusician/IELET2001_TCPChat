@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
 #################################################################################
-# A Chat Client application. Used in the course IELEx2001 Computer networks, NTNU
+# Gruppe 24: J. Dyrskog, E. Fagerbakke, M. Gaddour, V. Moland, B. Visockis      #
+# Øving A3 09.10.20 IELET2001 (Datakommunikasjon) NTNU, Trondheim               #
 #################################################################################
 
 import socket
@@ -17,16 +18,12 @@ states = [
 
 # State variables
 current_state = "disconnected"      # The current state of the system
-
 must_run = True                     # When this variable will be set to false, the application will stop
-
 client_socket = None                # (type socket) Use this variable to create socket connection to the chat server
 
 
 def quit_application():
     """ Update the application state so that the main-loop will exit """
-    # Make sure we reference the global variable here. Not the best code style,
-    # but the easiest to work with without involving object-oriented code
     global must_run
     must_run = False
 
@@ -46,9 +43,6 @@ def send_command(command, arguments=None):
         else:
             cmd = f"{command} {arguments}\n"
         client_socket.send(cmd.encode())
-
-        # print(TextColors.OKBLUE + "\t\t\t\t  Command sent\n" + TextColors.ENDC)
-
     except OSError as e:
         print(TextColors.FAIL + "Error: " + e + TextColors.ENDC)
 
@@ -77,8 +71,6 @@ def get_servers_response():
     Wait until a response command is received from the server
     :return: The response of the server, the whole line as a single string
     """
-    # TODO Step 4: implement this function
-    # Hint: reuse read_one_line (copied from the tutorial-code)
     try:
         response = read_one_line(client_socket)
         return response
@@ -87,19 +79,23 @@ def get_servers_response():
 
 
 def connect_to_server():
-    # Must have these two lines, otherwise the function will not "see" the global variables that we will change here
     global client_socket
     global current_state
 
+    # Creates new socket.
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
         client_socket.connect((SERVER_HOST, TCP_PORT))
         current_state = "connected"
-        send_command("sync")                            #Sends the sync-command to the server
-        if get_servers_response() == "modeok":          #Checks if sync mode was successfully enabled
+
+        # Sends the sync-command to the server
+        send_command("sync")
+
+        # Checks if sync mode was successfully enabled
+        if get_servers_response() == "modeok":
             if DEBUG:
-                DEBUG_PRINT("sync mode enabled.")
+                DEBUG_PRINT("modeok")
             OKGREEN_PRINT(f"Successfully connected to server at {SERVER_HOST}:{TCP_PORT}.")
         else:
             if DEBUG:
@@ -126,23 +122,19 @@ def disconnect_from_server():
 
 def authorize():
     global current_state
-    
-    if current_state == "authorized":
-        WARNING_PRINT("User already logged in.")
 
+    username = input(TextColors.BOLD + "Enter username: " + TextColors.ENDC)
+    send_command("login", username)
+    response = get_servers_response()
+
+    if DEBUG:
+        DEBUG_PRINT(response)
+
+    if response == "loginok":
+        current_state = "authorized"
+        OKGREEN_PRINT("Login successfull!")
     else:
-        username = input(TextColors.BOLD + "Enter username: " + TextColors.ENDC)
-        send_command("login", username)
-        response = get_servers_response()
-        
-        if DEBUG:
-            DEBUG_PRINT(response)
-
-        if response == "loginok":
-            current_state = "authorized"
-            OKGREEN_PRINT("Login successfull!")
-        else:
-            FAIL_PRINT(response)
+        FAIL_PRINT(response)
 
 
 def send_public_message():
@@ -211,6 +203,8 @@ def read_messages_in_the_inbox():
 
     if num_lines == 0:
         OKBLUE_PRINT("You don't have any messages.")
+
+    # If there are messages in the inbox, print them in formatted view.
     else:
         UNDERLINE_PRINT(f"You've got {num_lines} unread messages: \n")
         for i in range(num_lines):
@@ -220,7 +214,7 @@ def read_messages_in_the_inbox():
             if recv_msg[0] == "privmsg":
                 msg_line += "(Private) ".rjust(10)
             else:
-                msg_line += "(Global) ".rjust(10)
+                msg_line += "(Public) ".rjust(10)
             
             msg_line += f"{recv_msg[1]}: ".rjust(15)
             msg_line += recv_msg[2]
