@@ -1,9 +1,7 @@
 from .TextColors import TextColors
-from .config import DEBUG
 
 def DEBUG_PRINT(printText):
-    if DEBUG:
-        print(TextColors.DEBUG + str(printText) + TextColors.ENDDEBUG)
+    print(TextColors.DEBUG + str(printText) + TextColors.ENDDEBUG)
 
 
 def OKGREEN_PRINT(printText):
