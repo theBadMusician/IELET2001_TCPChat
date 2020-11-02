@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width" intitial-scale=1.0>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="nettside.css">
+</head>
+
+<body>
+
+    <h1 id="dataB"></h1>
+
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-analytics.js"></script>
+
+    <script>
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFnJK0qbReRgd4hVjnduPTycOW8IWNZXA",
+            authDomain: "datakom24-934c8.firebaseapp.com",
+            databaseURL: "https://datakom24-934c8.firebaseio.com",
+            projectId: "datakom24-934c8",
+            storageBucket: "datakom24-934c8.appspot.com",
+            messagingSenderId: "656702701341",
+            appId: "1:656702701341:web:4dad8aedc6b272fd532bf4",
+            measurementId: "G-H7912LXCBX"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        firebase.analytics();
+
+        var dataB = document.getElementById("dataB");
+        var dbRef = firebase.database().ref().child("users");
+        dbRef.on("value", snap => dataB.innerText = snap.val());
+    </script>
+
+
+</body>
+
+</html>
